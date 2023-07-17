@@ -13,7 +13,7 @@ object DeathConfig
 
     fun loadDeaths()
     {
-        val file = File(AdvancedDeaths.instance.dataFolder, "reclaims.json")
+        val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
 
         if (file.exists())
         {
