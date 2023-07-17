@@ -1,6 +1,7 @@
 package ltd.matrixstudios.deaths.deaths
 
 import ltd.matrixstudios.deaths.serialize.ItemStackAdapter
+import org.bukkit.inventory.ItemStack
 import java.util.UUID
 
 data class DeathEntry(
@@ -14,9 +15,11 @@ data class DeathEntry(
     var diedTo: String
 ) {
 
-    @Transient
-    val itemArray = ItemStackAdapter.itemStackArrayFromBase64(inventory)
+    lateinit var itemArray: Array<ItemStack?>
+    lateinit var armorArray: Array<ItemStack?>
 
-    @Transient
-    val armorArray = ItemStackAdapter.itemStackArrayFromBase64(armorContents)
+    fun loadItems() {
+        itemArray = ItemStackAdapter.itemStackArrayFromBase64(inventory)
+        armorArray = ItemStackAdapter.itemStackArrayFromBase64(armorContents)
+    }
 }

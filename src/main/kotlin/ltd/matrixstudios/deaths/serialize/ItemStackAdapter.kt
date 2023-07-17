@@ -76,7 +76,7 @@ object ItemStackAdapter {
             dataInput.close()
             items
         } catch (e: ClassNotFoundException) {
-            throw IOException("Unable to decode class type.", e)
+            arrayOfNulls(0)
         }
     }
 }

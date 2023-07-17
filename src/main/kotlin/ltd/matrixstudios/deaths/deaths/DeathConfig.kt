@@ -5,11 +5,12 @@ import com.google.gson.reflect.TypeToken
 import ltd.matrixstudios.deaths.AdvancedDeaths
 import java.io.File
 import java.lang.reflect.Type
+import java.util.*
 
 object DeathConfig
 {
 
-    val CONFIG_TYPE: Type = object : TypeToken<MutableList<DeathEntry>>() {}.type
+    val CONFIG_TYPE: Type = object : TypeToken<MutableMap<UUID, MutableList<DeathEntry>>>() {}.type
 
     fun loadDeaths()
     {
@@ -20,19 +21,17 @@ object DeathConfig
             val reader = file.reader(Charsets.UTF_8)
 
             AdvancedDeaths.instance.GSON.fromJson<
-                    MutableList<DeathEntry>>(
+                    MutableMap<UUID, MutableList<DeathEntry>>>(
                 reader, CONFIG_TYPE
             ).forEach {
-                val list = DeathHandler.items.getOrDefault(it.owner, mutableListOf())
-                list.add(it)
-                DeathHandler.items[it.owner] = list
+                DeathHandler.set(it.key, it.value)
             }
         } else {
             file.createNewFile()
 
             file.writeText(
                 AdvancedDeaths.instance.GSON.toJson
-                    (DeathHandler.items.values,
+                    (DeathHandler.items,
                     CONFIG_TYPE
                 ), Charsets.UTF_8
             )
@@ -43,6 +42,7 @@ object DeathConfig
     {
         val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
 
+        item.loadItems()
 
         val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
             .sortedByDescending { it.at }
@@ -63,11 +63,7 @@ object DeathConfig
 
         if (file.exists()) {
             file.writeText(
-                AdvancedDeaths.instance.GSON.toJson
-                    (
-                    DeathHandler.items.values,
-                    CONFIG_TYPE
-                ),
+                AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
                 Charsets.UTF_8
             )
         }
@@ -89,7 +85,7 @@ object DeathConfig
         {
             Files.write(
                 AdvancedDeaths.instance.GSON.toJson
-                    (DeathHandler.items.values,
+                    (DeathHandler.items,
                     CONFIG_TYPE
                 ), file,
                 Charsets.UTF_8
