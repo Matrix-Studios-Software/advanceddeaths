@@ -1,0 +1,5 @@
+name: AdvancedDeaths
+version: master/1.1
+author: Matrix Studios
+main: ltd.matrixstudios.deaths.AdvancedDeaths
+description: The fastest and easiest death history plugin!
