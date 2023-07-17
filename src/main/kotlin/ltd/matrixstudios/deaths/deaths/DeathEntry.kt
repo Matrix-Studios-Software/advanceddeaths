@@ -15,7 +15,10 @@ data class DeathEntry(
     var diedTo: String
 ) {
 
+    @Transient
     lateinit var itemArray: Array<ItemStack?>
+
+    @Transient
     lateinit var armorArray: Array<ItemStack?>
 
     fun loadItems() {
