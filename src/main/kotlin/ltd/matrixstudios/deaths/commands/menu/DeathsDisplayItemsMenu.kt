@@ -46,7 +46,7 @@ class DeathsDisplayItemsMenu(val entry: DeathEntry, val player: Player) : Menu(p
             } else i2++
         }
 
-        buttons[45] = SimpleActionButton(Material.PAPER, mutableListOf(), "&eTeleport To Death", 0).setBody { player, i, clickType -> player.teleport(
+        buttons[44] = SimpleActionButton(Material.PAPER, mutableListOf(), "&eTeleport To Death", 0).setBody { player, i, clickType -> player.teleport(
             Location(Bukkit.getWorld(entry.world), entry.x.toDouble(), entry.y.toDouble(), entry.z.toDouble()))
         }
 

@@ -83,7 +83,7 @@ class DeathsMenu(val player: Player, val target: OfflinePlayer) : PaginatedMenu(
             desc.add(Chat.format("&eInventory Contents: &f" + deathEntry.itemArray.count { it != null }))
             desc.add(Chat.format("&eDeath Message: &f" + deathEntry.diedTo))
             desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
-            desc.add(Chat.format("&eDeath Location: &f" + deathEntry.x + "," + deathEntry.y + "," + deathEntry.z))
+            desc.add(Chat.format("&eDeath Location: &f" + deathEntry.x + ", " + deathEntry.y + ", " + deathEntry.z))
             desc.add(Chat.format("&eDied: &f" + TimeUtils.formatIntoDetailedString((System.currentTimeMillis().minus(deathEntry.at) / 1000L).toInt())))
             desc.add(Chat.format("&eAlready Refunded: &f" + if (deathEntry.refunded) "&aYes" else "&cNo"))
             desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
