@@ -8,6 +8,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
+import java.util.*
 
 class DeathListener : Listener {
 
@@ -22,14 +23,17 @@ class DeathListener : Listener {
         val playerArmorContent = ItemStackAdapter.itemStackArrayToBase64(player.inventory.armorContents) ?: return
 
         val deathEntry = DeathEntry(
+            UUID.randomUUID(),
             player.uniqueId,
             playerInventory,
             playerArmorContent,
             System.currentTimeMillis(),
+            player.location.world.name,
             player.location.blockX, player.location.blockY, player.location.blockZ,
-            deathMessage
+            deathMessage,
+            false
         )
 
-        DeathConfig.saveItem(deathEntry)
+        DeathConfig.createItem(deathEntry)
     }
 }

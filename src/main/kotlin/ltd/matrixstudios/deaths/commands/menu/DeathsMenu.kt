@@ -1,7 +1,9 @@
 package ltd.matrixstudios.deaths.commands.menu
 
+import ltd.matrixstudios.deaths.deaths.DeathConfig
 import ltd.matrixstudios.deaths.deaths.DeathEntry
 import ltd.matrixstudios.deaths.deaths.DeathHandler
+import ltd.matrixstudios.deaths.utils.TimeUtils
 import ltd.matrixstudios.deaths.utils.menu.Button
 import ltd.matrixstudios.deaths.utils.menu.pagination.PaginatedMenu
 import ltd.matrixstudios.receive.utils.Chat
@@ -81,11 +83,18 @@ class DeathsMenu(val player: Player, val target: OfflinePlayer) : PaginatedMenu(
             desc.add(Chat.format("&eInventory Contents: &f" + deathEntry.itemArray.count { it != null }))
             desc.add(Chat.format("&eDeath Message: &f" + deathEntry.diedTo))
             desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
+            desc.add(Chat.format("&eDeath Location: &f" + deathEntry.x + "," + deathEntry.y + "," + deathEntry.z))
+            desc.add(Chat.format("&eDied: &f" + TimeUtils.formatIntoDetailedString((System.currentTimeMillis().minus(deathEntry.at) / 1000L).toInt())))
+            desc.add(Chat.format("&eAlready Refunded: &f" + if (deathEntry.refunded) "&aYes" else "&cNo"))
+            desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
+            desc.add(Chat.format("&aLeft-Click to refund this inventory to this player"))
+            desc.add(Chat.format("&cRight-Click to view the contents of this inventory"))
+            desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
             return desc
         }
 
         override fun getDisplayName(player: Player): String? {
-            return Chat.format("&e${target.name} Death #${position}")
+            return Chat.format("&6${target.name} Death #${position}")
         }
 
         override fun getData(player: Player): Short {
@@ -93,7 +102,31 @@ class DeathsMenu(val player: Player, val target: OfflinePlayer) : PaginatedMenu(
         }
 
         override fun onClick(player: Player, slot: Int, type: ClickType) {
+            if (type == ClickType.LEFT) {
+                if (!target.isOnline) {
+                    player.sendMessage(Chat.format("&cThis player must be online to receive inventory updates"))
+                    return
+                }
 
+                if (deathEntry.refunded) {
+                    player.sendMessage(Chat.format("&cThis death has already been refunded!"))
+                    return
+                }
+
+                val bukkitPlayer = target.player
+                bukkitPlayer.inventory.clear()
+                bukkitPlayer.inventory.contents = deathEntry.itemArray
+                bukkitPlayer.inventory.armorContents = deathEntry.armorArray
+                bukkitPlayer.updateInventory()
+                player.sendMessage(Chat.format("&eYou have refunded " + bukkitPlayer.displayName + "&e's inventory"))
+
+                deathEntry.refunded = true
+                DeathConfig.saveItem(deathEntry)
+            }
+
+            if (type == ClickType.RIGHT) {
+                DeathsDisplayItemsMenu(deathEntry, player).openMenu()
+            }
         }
 
     }

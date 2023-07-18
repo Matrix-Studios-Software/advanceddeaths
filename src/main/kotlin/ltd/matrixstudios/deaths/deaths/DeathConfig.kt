@@ -11,11 +11,10 @@ object DeathConfig
 {
 
     val CONFIG_TYPE: Type = object : TypeToken<MutableMap<UUID, MutableList<DeathEntry>>>() {}.type
+    val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
 
     fun loadDeaths()
     {
-        val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
-
         if (file.exists())
         {
             val reader = file.reader(Charsets.UTF_8)
@@ -38,28 +37,21 @@ object DeathConfig
         }
     }
 
-    fun saveItem(item: DeathEntry)
+    fun createItem(item: DeathEntry)
     {
-        val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
-
         item.loadItems()
 
         val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
-            .sortedByDescending { it.at }
+            .sortedBy{ it.at }
             .toMutableList()
 
-        val toDelete = mutableListOf<DeathEntry>()
-
         if (list.size >= 15) {
-            toDelete.add(list.removeFirst())
-            list.add(item)
-
-            DeathHandler.items[item.owner] = list
-        } else {
-            list.add(item)
-            DeathHandler.items[item.owner] = list
+            list.removeFirst()
         }
 
+        list.add(item)
+
+        DeathHandler.set(item.owner, list)
 
         if (file.exists()) {
             file.writeText(
@@ -67,17 +59,26 @@ object DeathConfig
                 Charsets.UTF_8
             )
         }
+    }
 
-        for (delete in toDelete) {
-            deleteItem(delete)
+    fun saveItem(item: DeathEntry) {
+        val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
+
+        list.removeIf { it.uniqueId == item.uniqueId }
+        list.add(item)
+
+        DeathHandler.set(item.owner, list)
+
+        if (file.exists()) {
+            file.writeText(
+                AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
+                Charsets.UTF_8
+            )
         }
     }
 
     fun deleteItem(item: DeathEntry)
     {
-        val file = File(AdvancedDeaths.instance.dataFolder, "reclaims.json")
-
-
         DeathHandler.items.remove(item.owner)
 
 
