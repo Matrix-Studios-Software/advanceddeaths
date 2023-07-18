@@ -9,6 +9,8 @@ import co.aikar.commands.annotation.HelpCommand
 import co.aikar.commands.annotation.Name
 import co.aikar.commands.annotation.Subcommand
 import ltd.matrixstudios.deaths.commands.menu.DeathsMenu
+import ltd.matrixstudios.deaths.deaths.DeathConfig
+import ltd.matrixstudios.deaths.deaths.DeathHandler
 import ltd.matrixstudios.receive.utils.Chat
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
@@ -24,14 +26,42 @@ class DeathsCommand : BaseCommand() {
         player.sendMessage(Chat.format("&edeaths reset &6[player] - Resets the death of a player"))
         player.sendMessage(Chat.format("&edeaths rawoutput &6[player] - Shows death history without a menu"))
         player.sendMessage(Chat.format("&edeaths manualrefund &6<player> <position> - Manually refunds a player's inventory at a certain position"))
-        player.sendMessage(Chat.format("&edeaths giveto <player> - Gives your current inventory to a selected player"))
-        player.sendMessage(Chat.format("&edeaths takefrom <player> - Gives a selected player's inventory to you"))
+        player.sendMessage(Chat.format("&edeaths giveto &6<player> - Gives your current inventory to a selected player"))
+        player.sendMessage(Chat.format("&edeaths takefrom &6<player> - Gives a selected player's inventory to you"))
     }
 
     @Subcommand("check")
     @CommandCompletion("@players")
     fun check(player: Player, @Name("target") @Flags("other") offlinePlayer: OfflinePlayer) {
         DeathsMenu(player, offlinePlayer).updateMenu()
+    }
+
+    @Subcommand("manualrefund")
+    @CommandCompletion("@players")
+    fun manualRefund(player: Player, @Name("target") @Flags("other") target: Player, @Name("position") pos: Int) {
+        val deaths = DeathHandler.getDeathsOrderedByDate(target.uniqueId)
+
+        if (deaths.size < pos) {
+            player.sendMessage(Chat.format("&cThis player does not have enough deaths to do this!"))
+            return
+        }
+
+        val at = deaths[pos]
+
+        if (at.refunded) {
+            player.sendMessage(Chat.format("&cThis death has already been refunded!"))
+            return
+        }
+
+        val bukkitPlayer = target.player
+        bukkitPlayer.inventory.clear()
+        bukkitPlayer.inventory.contents = at.itemArray
+        bukkitPlayer.inventory.armorContents = at.armorArray
+        bukkitPlayer.updateInventory()
+        player.sendMessage(Chat.format("&eYou have refunded " + bukkitPlayer.displayName + "&e's inventory"))
+
+        at.refunded = true
+        DeathConfig.saveItem(at)
     }
 
     @Subcommand("giveto")

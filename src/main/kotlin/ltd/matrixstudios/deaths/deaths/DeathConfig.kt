@@ -12,6 +12,7 @@ object DeathConfig
 
     val CONFIG_TYPE: Type = object : TypeToken<MutableMap<UUID, MutableList<DeathEntry>>>() {}.type
     val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
+    val MAX_DEATHS = AdvancedDeaths.instance.config.getInt("max-deaths-per-player")
 
     fun loadDeaths()
     {
@@ -42,10 +43,10 @@ object DeathConfig
         item.loadItems()
 
         val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
-            .sortedBy{ it.at }
+            .sortedByDescending { System.currentTimeMillis().minus(it.at) / 1000L }
             .toMutableList()
 
-        if (list.size >= 15) {
+        if (list.size >= MAX_DEATHS) {
             list.removeFirst()
         }
 

@@ -7,11 +7,12 @@ import ltd.matrixstudios.deaths.utils.menu.buttons.SimpleActionButton
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.ItemStack
 
-class DeathsDisplayItemsMenu(val entry: DeathEntry, val player: Player) : Menu(player) {
+class DeathsDisplayItemsMenu(val entry: DeathEntry, val player: Player, val target: OfflinePlayer) : Menu(player) {
 
     init {
         staticSize = 45
@@ -46,6 +47,9 @@ class DeathsDisplayItemsMenu(val entry: DeathEntry, val player: Player) : Menu(p
             } else i2++
         }
 
+        buttons[43] = SimpleActionButton(Material.NETHER_STAR, mutableListOf(), "&eNavigate Back", 0).setBody { player, i, clickType ->
+            DeathsMenu(player, target).updateMenu()
+        }
         buttons[44] = SimpleActionButton(Material.PAPER, mutableListOf(), "&eTeleport To Death", 0).setBody { player, i, clickType -> player.teleport(
             Location(Bukkit.getWorld(entry.world), entry.x.toDouble(), entry.y.toDouble(), entry.z.toDouble()))
         }

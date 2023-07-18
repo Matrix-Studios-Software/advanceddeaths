@@ -21,6 +21,12 @@ object DeathHandler {
         }
      }
 
+    fun getDeathsOrderedByDate(id: UUID) : MutableList<DeathEntry> {
+        return getById(id)
+            .sortedBy { System.currentTimeMillis().minus(it.at) / 1000L }
+            .toMutableList()
+    }
+
     fun getById(id: UUID) : MutableList<DeathEntry> {
         return items.computeIfAbsent(id) { return@computeIfAbsent mutableListOf<DeathEntry>() }
     }

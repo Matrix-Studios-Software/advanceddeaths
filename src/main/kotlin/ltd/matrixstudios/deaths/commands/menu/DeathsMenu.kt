@@ -19,7 +19,8 @@ class DeathsMenu(val player: Player, val target: OfflinePlayer) : PaginatedMenu(
         val buttons = hashMapOf<Int, Button>()
 
         var index = 0
-        for (entry in DeathHandler.getById(target.uniqueId)) {
+        //increasing order
+        for (entry in DeathHandler.getDeathsOrderedByDate(target.uniqueId)) {
             buttons[index++] = DeathButton(target, entry, index)
         }
 
@@ -78,23 +79,23 @@ class DeathsMenu(val player: Player, val target: OfflinePlayer) : PaginatedMenu(
         override fun getDescription(player: Player): MutableList<String>? {
             val desc = mutableListOf<String>()
             desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
-            desc.add(Chat.format("&eDead Player: &f" + target.name))
-            desc.add(Chat.format("&eArmor Contents: &f" + deathEntry.armorArray.count { it != null }))
-            desc.add(Chat.format("&eInventory Contents: &f" + deathEntry.itemArray.count { it != null }))
-            desc.add(Chat.format("&eDeath Message: &f" + deathEntry.diedTo))
+            desc.add(Chat.format("&eVictim: &c" + target.name))
+            desc.add(Chat.format("&eArmor Contents: &c" + deathEntry.armorArray.count { it != null && it.type != Material.AIR }))
+            desc.add(Chat.format("&eInventory Contents: &c" + deathEntry.itemArray.count { it != null }))
+            desc.add(Chat.format("&eDeath Message: &c" + deathEntry.diedTo))
             desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
-            desc.add(Chat.format("&eDeath Location: &f" + deathEntry.x + ", " + deathEntry.y + ", " + deathEntry.z))
-            desc.add(Chat.format("&eDied: &f" + TimeUtils.formatIntoDetailedString((System.currentTimeMillis().minus(deathEntry.at) / 1000L).toInt())))
-            desc.add(Chat.format("&eAlready Refunded: &f" + if (deathEntry.refunded) "&aYes" else "&cNo"))
+            desc.add(Chat.format("&eDeath Location: &c" + niceName(deathEntry.world) + " (" + deathEntry.x + ", " + deathEntry.y + ", " + deathEntry.z + ")"))
+            desc.add(Chat.format("&eDied: &c" + TimeUtils.formatIntoDetailedString((System.currentTimeMillis().minus(deathEntry.at) / 1000L).toInt()) + " ago"))
+            desc.add(Chat.format("&eAlready Refunded: &c" + if (deathEntry.refunded) "&aYes" else "&cNo"))
             desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
-            desc.add(Chat.format("&aLeft-Click to refund this inventory to this player"))
-            desc.add(Chat.format("&cRight-Click to view the contents of this inventory"))
+            desc.add(Chat.format("&7Left-Click to refund this inventory to this player"))
+            desc.add(Chat.format("&7Right-Click to view the contents of this inventory"))
             desc.add(Chat.format("&7&m${StringUtils.repeat("-", 30)}"))
             return desc
         }
 
         override fun getDisplayName(player: Player): String? {
-            return Chat.format("&6${target.name} Death #${position}")
+            return Chat.format("&e${target.name} Death #${position}")
         }
 
         override fun getData(player: Player): Short {
@@ -125,8 +126,16 @@ class DeathsMenu(val player: Player, val target: OfflinePlayer) : PaginatedMenu(
             }
 
             if (type == ClickType.RIGHT) {
-                DeathsDisplayItemsMenu(deathEntry, player).openMenu()
+                DeathsDisplayItemsMenu(deathEntry, player, target).openMenu()
             }
+        }
+
+        fun niceName(world: String) : String {
+            if (world == "world") return "Overworld"
+            if (world == "world_the_end") return "End"
+            if (world == "world_nether") return "Nether"
+
+            return world
         }
 
     }
