@@ -6,18 +6,16 @@ import ltd.matrixstudios.deaths.AdvancedDeaths
 import java.io.File
 import java.lang.reflect.Type
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
-object DeathConfig
-{
+object DeathConfig {
 
     val CONFIG_TYPE: Type = object : TypeToken<MutableMap<UUID, MutableList<DeathEntry>>>() {}.type
     val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
     val MAX_DEATHS = AdvancedDeaths.instance.config.getInt("max-deaths-per-player")
 
-    fun loadDeaths()
-    {
-        if (file.exists())
-        {
+    fun loadDeaths() {
+        if (file.exists()) {
             val reader = file.reader(Charsets.UTF_8)
 
             AdvancedDeaths.instance.GSON.fromJson<
@@ -31,34 +29,37 @@ object DeathConfig
 
             file.writeText(
                 AdvancedDeaths.instance.GSON.toJson
-                    (DeathHandler.items,
+                    (
+                    DeathHandler.items,
                     CONFIG_TYPE
                 ), Charsets.UTF_8
             )
         }
     }
 
-    fun createItem(item: DeathEntry)
-    {
-        item.loadItems()
+    fun createItem(item: DeathEntry) {
+        CompletableFuture.runAsync {
 
-        val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
-            .sortedByDescending { System.currentTimeMillis().minus(it.at) / 1000L }
-            .toMutableList()
+            item.loadItems()
 
-        if (list.size >= MAX_DEATHS) {
-            list.removeFirst()
-        }
+            val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
+                .sortedByDescending { System.currentTimeMillis().minus(it.at) / 1000L }
+                .toMutableList()
 
-        list.add(item)
+            if (list.size >= MAX_DEATHS) {
+                list.removeFirst()
+            }
 
-        DeathHandler.set(item.owner, list)
+            list.add(item)
 
-        if (file.exists()) {
-            file.writeText(
-                AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
-                Charsets.UTF_8
-            )
+            DeathHandler.set(item.owner, list)
+
+            if (file.exists()) {
+                file.writeText(
+                    AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
+                    Charsets.UTF_8
+                )
+            }
         }
     }
 
@@ -78,18 +79,17 @@ object DeathConfig
         }
     }
 
-    fun deleteItem(item: DeathEntry)
-    {
+    fun deleteItem(item: DeathEntry) {
         DeathHandler.items.remove(item.owner)
 
 
-        if (file.exists())
-        {
-            Files.write(
+        if (file.exists()) {
+            file.writeText(
                 AdvancedDeaths.instance.GSON.toJson
-                    (DeathHandler.items,
+                    (
+                    DeathHandler.items,
                     CONFIG_TYPE
-                ), file,
+                ),
                 Charsets.UTF_8
             )
         }
