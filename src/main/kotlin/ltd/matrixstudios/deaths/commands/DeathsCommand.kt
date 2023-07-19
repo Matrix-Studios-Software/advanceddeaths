@@ -11,9 +11,13 @@ import co.aikar.commands.annotation.Subcommand
 import ltd.matrixstudios.deaths.commands.menu.DeathsMenu
 import ltd.matrixstudios.deaths.deaths.DeathConfig
 import ltd.matrixstudios.deaths.deaths.DeathHandler
+import ltd.matrixstudios.deaths.utils.TimeUtils
 import ltd.matrixstudios.receive.utils.Chat
+import org.apache.commons.lang.StringUtils
 import org.bukkit.OfflinePlayer
+import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import java.util.Date
 
 @CommandAlias("ad|advanceddeaths|deathhistory|deaths")
 @CommandPermission("advanceddeaths.use")
@@ -36,9 +40,26 @@ class DeathsCommand : BaseCommand() {
         DeathsMenu(player, offlinePlayer).updateMenu()
     }
 
+    @Subcommand("rawoutput")
+    @CommandCompletion("@players")
+    fun rawOutput(player: CommandSender, @Name("target") @Flags("other") target: Player) {
+        val deaths = DeathHandler.getDeathsOrderedByDate(target.uniqueId).take(10)
+
+        if (deaths.isEmpty()) {
+            player.sendMessage(Chat.format("&cThis player has no deaths"))
+            return
+        }
+        player.sendMessage(Chat.format("&e&lDeaths of &f" + target.displayName))
+        player.sendMessage(Chat.format("&7&m${StringUtils.repeat("-", 40)}"))
+        for (death in deaths) {
+            player.sendMessage(Chat.format("&e[${TimeUtils.formatIntoCalendarString(Date(death.at))}] " + death.diedTo + " [Refunded: " + (if (death.refunded) "Yes" else "No") + "] " + "At " + death.world + " (" + death.x + ", " + death.y + ", " + death.z + ")"))
+        }
+        player.sendMessage(Chat.format("&7&m${StringUtils.repeat("-", 40)}"))
+    }
+
     @Subcommand("manualrefund")
     @CommandCompletion("@players")
-    fun manualRefund(player: Player, @Name("target") @Flags("other") target: Player, @Name("position") pos: Int) {
+    fun manualRefund(player: CommandSender, @Name("target") @Flags("other") target: Player, @Name("position") pos: Int) {
         val deaths = DeathHandler.getDeathsOrderedByDate(target.uniqueId)
 
         if (deaths.size < pos) {
@@ -46,7 +67,7 @@ class DeathsCommand : BaseCommand() {
             return
         }
 
-        val at = deaths[pos]
+        val at = deaths[pos-1]
 
         if (at.refunded) {
             player.sendMessage(Chat.format("&cThis death has already been refunded!"))

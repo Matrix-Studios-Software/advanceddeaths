@@ -34,7 +34,7 @@ class DeathsDisplayItemsMenu(val entry: DeathEntry, val player: Player, val targ
             } else i++
         }
 
-        var i2 = 37
+        var i2 = 36
         for (armor in entry.armorArray) {
             var button: Button? = null
 
