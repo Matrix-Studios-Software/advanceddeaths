@@ -38,28 +38,25 @@ object DeathConfig {
     }
 
     fun createItem(item: DeathEntry) {
-        CompletableFuture.runAsync {
+        item.loadItems()
 
-            item.loadItems()
+        val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
+            .sortedByDescending { System.currentTimeMillis().minus(it.at) / 1000L }
+            .toMutableList()
 
-            val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
-                .sortedByDescending { System.currentTimeMillis().minus(it.at) / 1000L }
-                .toMutableList()
+        if (list.size >= MAX_DEATHS) {
+            list.removeFirst()
+        }
 
-            if (list.size >= MAX_DEATHS) {
-                list.removeFirst()
-            }
+        list.add(item)
 
-            list.add(item)
+        DeathHandler.set(item.owner, list)
 
-            DeathHandler.set(item.owner, list)
-
-            if (file.exists()) {
-                file.writeText(
-                    AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
-                    Charsets.UTF_8
-                )
-            }
+        if (file.exists()) {
+            file.writeText(
+                AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
+                Charsets.UTF_8
+            )
         }
     }
 
