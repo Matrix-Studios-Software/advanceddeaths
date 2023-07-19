@@ -27,7 +27,6 @@ class DeathsCommand : BaseCommand() {
     fun help(player: Player) {
         player.sendMessage(Chat.format("&6=== &eShowing help for &6/deaths ==="))
         player.sendMessage(Chat.format("&edeaths check &6[player] - Opens the death history menu"))
-        player.sendMessage(Chat.format("&edeaths reset &6[player] - Resets the death of a player"))
         player.sendMessage(Chat.format("&edeaths rawoutput &6[player] - Shows death history without a menu"))
         player.sendMessage(Chat.format("&edeaths manualrefund &6<player> <position> - Manually refunds a player's inventory at a certain position"))
         player.sendMessage(Chat.format("&edeaths giveto &6<player> - Gives your current inventory to a selected player"))
