@@ -12,22 +12,20 @@ object DeathHandler {
     }
 
     fun set(id: UUID, items: MutableList<DeathEntry>) {
-        CompletableFuture.runAsync {
-            for (item in items) {
-                item.loadItems()
-            }
-
-            this.items[id] = items
+        for (item in items) {
+            item.loadItems()
         }
-     }
 
-    fun getDeathsOrderedByDate(id: UUID) : MutableList<DeathEntry> {
+        this.items[id] = items
+    }
+
+    fun getDeathsOrderedByDate(id: UUID): MutableList<DeathEntry> {
         return getById(id)
             .sortedBy { System.currentTimeMillis().minus(it.at) / 1000L }
             .toMutableList()
     }
 
-    fun getById(id: UUID) : MutableList<DeathEntry> {
+    fun getById(id: UUID): MutableList<DeathEntry> {
         return items.computeIfAbsent(id) { return@computeIfAbsent mutableListOf<DeathEntry>() }
     }
 }

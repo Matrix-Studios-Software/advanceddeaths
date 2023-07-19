@@ -11,8 +11,8 @@ import java.util.concurrent.CompletableFuture
 object DeathConfig {
 
     val CONFIG_TYPE: Type = object : TypeToken<MutableMap<UUID, MutableList<DeathEntry>>>() {}.type
-    val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
     val MAX_DEATHS = AdvancedDeaths.instance.config.getInt("max-deaths-per-player")
+    val file = File(AdvancedDeaths.instance.dataFolder, "deaths.json")
 
     fun loadDeaths() {
         if (file.exists()) {
@@ -38,25 +38,29 @@ object DeathConfig {
     }
 
     fun createItem(item: DeathEntry) {
-        item.loadItems()
+        CompletableFuture.runAsync {
+            item.loadItems()
 
-        val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
-            .sortedByDescending { System.currentTimeMillis().minus(it.at) / 1000L }
-            .toMutableList()
+            val list = DeathHandler.items.getOrDefault(item.owner, mutableListOf())
+                .sortedByDescending { System.currentTimeMillis().minus(it.at) / 1000L }
+                .toMutableList()
 
-        if (list.size >= MAX_DEATHS) {
-            list.removeFirst()
-        }
+            println(list.toString())
 
-        list.add(item)
+            if (list.size >= MAX_DEATHS) {
+                list.removeFirst()
+            }
 
-        DeathHandler.set(item.owner, list)
+            list.add(item)
 
-        if (file.exists()) {
-            file.writeText(
-                AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
-                Charsets.UTF_8
-            )
+            DeathHandler.set(item.owner, list)
+
+            if (file.exists()) {
+                file.writeText(
+                    AdvancedDeaths.instance.GSON.toJson(DeathHandler.items, CONFIG_TYPE),
+                    Charsets.UTF_8
+                )
+            }
         }
     }
 
